@@ -17,6 +17,7 @@ build-debug
 build-release
 debug
 *.log
+clear_build.bat
 
 # Prerequisites
 *.d

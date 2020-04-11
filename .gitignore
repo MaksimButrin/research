@@ -1,3 +1,23 @@
+# the my ignore list
+tmp
+bin
+.vs
+*.user
+*.tlog
+debug
+release
+*.o
+*.a
+*.exe
+*.lib
+*.Debug
+*.Release
+build
+build-debug
+build-release
+debug
+*.log
+
 # Prerequisites
 *.d
 

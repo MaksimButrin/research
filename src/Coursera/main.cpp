@@ -1,11 +1,11 @@
 #include <qdebug.h>
-#include <Geekbrains.h>
+#include <Coursera.h>
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-	qDebug() << "Geekbrains";
+	qDebug() << "Coursera";
 
-	homework02Part01();
+	init();
 }

@@ -1,3 +1,3 @@
 #include <iostream>
 
-void homework01Part01();
+void homework02Part01();

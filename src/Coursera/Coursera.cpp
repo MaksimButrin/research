@@ -61,11 +61,9 @@ yellowWeek01Leson02::~yellowWeek01Leson02()
 
 void yellowWeek01Leson02::temporary()
 {
-	qDebug() << __FUNCTION__;
+	vector<int> v{ 1, 4, 6 };
 
-
-
-
+	//for (int i = 0; )
 
 }
 
@@ -73,12 +71,14 @@ void yellowWeek01Leson02::printAvg()
 {
 	vector<int> t = { -8,-7,3 };
 	int sum{ 0 };
+
+	// range based for
 	for (int x : t)
 	{
 		sum += x;
 	}
 
-	auto avg = sum / t.size();
+	auto avg = sum / static_cast<int>(t.size());
 	
-	qDebug() << "avg = sum / t.size()" << avg;
+	qDebug() << "avg = sum / t.size() is equals " << avg;
 }

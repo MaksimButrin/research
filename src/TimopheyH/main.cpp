@@ -5,7 +5,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	qDebug() << "TimopheyH";
+	qDebug() << " == TimopheyH == \n";
 	
-	timopheyOOPLecture03Ex01();
+	init();
 }

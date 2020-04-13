@@ -14,7 +14,7 @@ void homework02Part01()
 	short varShort = 45000;
 	unsigned char varUnsignedChar = 1400;
 	
-	QString message = "Value of %1 if equal %2";
+	QString message = "Value of %1 is equal %2";
 
 	qDebug() << message.arg("varShort").arg(varShort);
 	qDebug() << message.arg("varUnsigned").arg(varUnsignedChar);

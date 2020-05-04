@@ -1,0 +1,10 @@
+1: hour: 1; temp: 23.04; abstract value 261
+2: hour: 2; temp: 24.05; abstract value 2c6
+3: hour: 3; temp: 25.06; abstract value 32b
+4: hour: 4; temp: 26.07; abstract value 390
+5: hour: 5; temp: 27.08; abstract value 3f5
+6: hour: 6; temp: 28.09; abstract value 45a
+7: hour: 7; temp: 29.1; abstract value 4bf
+8: hour: 8; temp: 30.11; abstract value 524
+9: hour: 9; temp: 31.12; abstract value 589
+10: hour: 10; temp: 32.13; abstract value 5ee

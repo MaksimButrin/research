@@ -119,6 +119,14 @@ public:
 	void temporary(const QVector<int> & v);
 	void temporary(const QVector<int> * v);
 	void temporary(const vector<int> & v);
+	
+	enum class tempEnum
+	{
+		fst = 1,
+		scnd = 2,
+		thrd = 3
+	};
+	void temporary();
 
 
 private:

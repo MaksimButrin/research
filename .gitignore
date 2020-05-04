@@ -12,6 +12,7 @@ release
 *.lib
 *.Debug
 *.Release
+_build
 build
 build-debug
 build-release

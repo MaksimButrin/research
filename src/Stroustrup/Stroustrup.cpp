@@ -1,4 +1,7 @@
 #include <Stroustrup.h>
+#include <Chrono.h>
+#include <Book.h>
+#include <InOut.h>
 
 #include <QDebug>
 #include <QString>
@@ -11,9 +14,15 @@
 
 
 using namespace std;
+using namespace nsChrono;
 
 void init()
 {
+	
+	// nsChrono::runChrono();
+	// liba::runLibrary();
+
+	nsInOut::runInOut();
 
 }
 
@@ -449,6 +458,7 @@ int StrausCalc::calcRun()
 	//temporary(&qvctr);
 	//vector<int> vctr{0,2,3};
 	//temporary(vctr);
+	temporary();
 
 	try
 	{
@@ -621,6 +631,18 @@ void StrausCalc::temporary(const vector<int> & v)
 {
 	auto sz = v.size();
 	sz = sz;
+}
+
+void StrausCalc::temporary()
+{
+	tempEnum s1 = tempEnum::scnd;
+	tempEnum s4 = tempEnum(5);
+	tempEnum s2 = tempEnum(1);
+	//tempEnum s3 = tempEnum{2};
+
+	//bool b1 = chrono::Date{};
+
+
 }
 
 Token TokenStream::getToken()

@@ -31,7 +31,7 @@ if(EXISTS ${QT_DIR})
    list(APPEND CMAKE_PREFIX_PATH ${QT_DIR})
 endif()
 
-find_package(Qt5 ${QT_VERSION} COMPONENTS Core Qml Widgets
+find_package(Qt5 ${QT_VERSION} COMPONENTS Core Charts Qml Widgets
 	Network Sql Xml Quick QuickWidgets Multimedia
 	WebSockets SerialBus SerialPort Test REQUIRED)
 
@@ -50,6 +50,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(HDR_GROUP_PREFIX "root")
 set(SRC_GROUP_PREFIX "root")
+set(UI_GROUP_PREFIX "root")
 
 add_subdirectory(src)
 

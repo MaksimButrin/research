@@ -13,8 +13,7 @@ using namespace std;
 
 void init()
 {
-	YellowWeek01Leson05().temporary();
-
+	WhiteBelt().runWhiteBelt();
 }
 
 

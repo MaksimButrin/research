@@ -2,8 +2,11 @@
 #include <qpainter.h>
 #include <QPolygon>
 #include <QGraphicsWidget>
-#include <QChartView>
+#include <QtCharts/QChartView>
 #include <QTextItem>
+#include <qdebug.h>
+
+QT_CHARTS_USE_NAMESPACE
 
 GraphMainWindow::GraphMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -15,6 +18,21 @@ GraphMainWindow::GraphMainWindow(QWidget *parent)
 }
 
 
+/* размер экрана */
+constexpr int X_MAX = 600;
+constexpr int Y_MAX = 400;
+/* центр окна */
+constexpr int X_ORIG = X_MAX / 2;
+constexpr int Y_ORIG = Y_MAX / 2;
+constexpr QPoint ORIG{ X_ORIG , Y_ORIG };
+/* диапазон -10 11 */
+constexpr int R_MIN = -10;
+constexpr int R_MAX = 11;
+/* количество точек в диапазоне */
+constexpr int N_POINTS = 400;
+/* масштабные множители */
+constexpr int X_SCALE = 30;
+constexpr int Y_SCALE = 30;
 
 GraphMainWindow::~GraphMainWindow()
 {
@@ -66,11 +84,12 @@ void GraphMainWindow::drawShape()
 void GraphMainWindow::drawAxis()
 {
 
-	//QChartView *chartView = new QChartView;
+	//QChartView *chartView = new QChartView(chart);
+	//chartView->setRenderHint(QPainter::Antialiasing);
 	//QLineSeries *series = new QLineSeries;
 	//// ...
 	//chartView->chart()->addSeries(series);
-
+	//
 	//QValueAxis *axisX = new QValueAxis;
 	//axisX->setRange(10, 20.5);
 	//axisX->setTickCount(10);
@@ -98,6 +117,8 @@ void GraphMainWindow::paintEvent(QPaintEvent *)
 	MCircle c2{ QPoint{350, 120}, 300 };
 	c2.setLineStyle(MLineStyle(5));
 	c2.draw(&divecePainter);
+
+//	MFunction f1{ slope, R_MIN, R_MAX, ORIG, N_POINTS, X_SCALE, Y_SCALE};
 }
 
 MLine::MLine()
@@ -241,10 +262,30 @@ MShape::MShape(QList<QPoint> lst)
 
 bool MShape::drawLines(QPainter * painterDevice) const
 {
-	if (painterDevice)
-		return true;
-	
-	return false;
+	if (!painterDevice)
+		return false;
+
+	if(_points.size() == 0 )
+		return false;
+
+	if (lineColor() != Qt::GlobalColor::transparent)
+	{
+		//int points[] = { p.first.x(), p.first.y(), p.second.x(), p.second.y() };
+		
+		QPolygon poly;
+
+		for (int i = 0; i < _points.size(); i++)
+		{
+			poly.setPoint(i, _points[i]);
+		}
+
+		painterDevice->setPen(getLinePen());
+		painterDevice->drawPolygon(poly);
+	}
+
+
+
+	return true;
 }
 
 
@@ -307,4 +348,48 @@ void MCircle::setRadius(int radius)
 {
 	setPoint(0, QPoint{ center().x() - radius, center().y() - radius });
 	_radius = radius;
+}
+
+MFunction::MFunction(Fct f, double r1, double r2, QPoint orig, int count, double xScale, double yScale)
+{
+	if ((r2 - r1) <= 0)
+	{
+		qDebug().noquote() << "Bad graphing range";
+		return;
+	}
+
+	if (count <= 0)
+	{
+		qDebug().noquote() << "Non-positive graphing count";
+		return;
+	}
+
+	double dist = (r2 - r1) / count;
+	double r = r1;
+	for (int i = 0; i < count; ++i)
+	{
+		add(QPoint{ orig.x() + int(r*xScale),  orig.y() - int(f(r) * yScale) });
+		r += dist;
+	}
+
+}
+
+double one()
+{
+	return 1.0;
+}
+
+double slope(double x)
+{
+	return x / 2.0;
+}
+
+double square(double x)
+{
+	return x * x;
+}
+
+double slopeCos(double x)
+{
+	return cos(x) + slope(x);
 }

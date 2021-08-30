@@ -5,6 +5,8 @@
 #include <map>
 #include <vector>
 
+#include "WhiteBelt.h"
+
 using namespace std;
 
 

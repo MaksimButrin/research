@@ -14,4 +14,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Applications)
 # Here connected dynamic library
 target_link_libraries(${PROJECT_NAME} Qt5::Core)
 
-message("Create project '" ${PROJECT_NAME} "' is done")
+message("Create project '" ${PROJECT_NAME} "' is done") 

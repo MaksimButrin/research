@@ -6,6 +6,17 @@
 #include <QPoint>
 #include <QVector>
 #include <QPen>
+#include <math.h>
+
+
+
+typedef double Fct(double);
+
+double one();
+double slope(double x);
+double square(double x);
+double slopeCos(double x);
+
 
 class GraphMainWindow : public QMainWindow
 {
@@ -84,12 +95,12 @@ public:
 	MShape & operator=(const MShape&) = delete;	// и копирующее присваивание удаленными
 	virtual ~MShape() {}
 
-protected:
+protected: // разжовано не листе 550
 
 	MShape() {}
 	MShape(QList<QPoint> lst);		// добавление точек
-
-	virtual bool drawLines(QPainter * painterDevice) const; // вывод линий
+	/* использование virtual foo() = 0, говорит о том что foo Обязаны быть перекрытой в производном классе. В этом случае foo является "чистой" */
+	virtual bool drawLines(QPainter * painterDevice) const = 0; // вывод линий
 
 	void add(QPoint p);				// добавление 'p' к точкам
 	bool setPoint(int numPoint, QPoint p); // _points[numPoint] = p;
@@ -130,4 +141,12 @@ struct MCircle : MShape
 
 private:
 	int _radius{ 20 };
+};
+
+
+
+struct MFunction: MShape
+{
+	/* параметры не сохраняются */
+	MFunction(Fct f, double r1, double r2, QPoint orig, int count = 100, double xScale = 25, double yScale = 25);
 };

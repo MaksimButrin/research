@@ -47,3 +47,25 @@ public:
 private:
 
 };
+
+/* алгоритмы и структуры данных */
+/* лекция 2 */
+class ADSLecture02Ex01
+{
+public:
+	ADSLecture02Ex01() {};
+	~ADSLecture02Ex01() {};
+	
+	/* битовые операции */
+	void bitOperations();
+	void run();
+	QString byteToString(int x, bool nubbles = true);
+	void binPrintInt(int x, bool nubbles = true);
+	/* Простые числа: Решето Эратосфена*/
+	QList<int> simpleNumbersSeparator();
+	/* Простые множители: Решето Эратосфена*/
+	void simpleFactors(int & number);
+	void sf();
+private:
+
+};

@@ -5,15 +5,24 @@
 //#include <math.h> //old style include from C
 #include <cmath> //current style include from C
 
+const QString SEPARATOR{ "===============================================" };
+const QString SEPARATOR_MINI{ "===================" };
+const QString ANDS{ "\t\t\t&&&& &&&& &&&& &&&&" };
+const QString ORS{ "\t\t\t|||| |||| |||| ||||" };
+const QString XORS{ "\t\t\t^^^^ ^^^^ ^^^^ ^^^^" };
+const QString EQUALS{ "\t\t\t==== ==== ==== ====" };
 
 using namespace std;
 
 void init()
 {
-	timopheyOOPLecture04Ex01().temporary();
+	//timopheyOOPLecture04Ex01().temporary();
 
-	timopheyOOPLecture04Ex01().trash01();
-	timopheyOOPLecture04Ex01().trash02();
+	//timopheyOOPLecture04Ex01().trash01();
+	//timopheyOOPLecture04Ex01().trash02();
+	//ADSLecture02Ex01().simpleNumbersSeparator();
+	ADSLecture02Ex01().run();
+
 }
 
 /* ============== L-03 Ex-01 =================  */
@@ -240,7 +249,7 @@ void timopheyOOPLecture04Ex01::trash06()
 
 	double **a{ nullptr };
 	a = new double *[height];
-	a[0] = new double [height * width];
+	a[0] = new double[height * width];
 
 	for (int k = 0; k < height; k++)
 	{
@@ -314,14 +323,14 @@ void timopheyOOPLecture04Ex01::temporary()
 	double x = 0.33;
 
 	qDebug().noquote() << QString("value is equal %1").arg(foo01(x));
-	
+
 	double s = 0.0;
 	double factor;
 
 	for (int n = 0, factor = 1; n < 10; n++)
 	{
-		 s += pow(-1, 2) * pow(x, 2 * n + 1) / factor;
-		 factor *= 2 * n*(2 * n + 1);
+		s += pow(-1, 2) * pow(x, 2 * n + 1) / factor;
+		factor *= 2 * n*(2 * n + 1);
 
 	}
 	qDebug().noquote() << QString("value is equal %1").arg(foo01(s));
@@ -330,4 +339,255 @@ void timopheyOOPLecture04Ex01::temporary()
 double timopheyOOPLecture04Ex01::foo01(const double &x)
 {
 	return 2 * sin(x);
+}
+
+
+
+void ADSLecture02Ex01::bitOperations()
+{
+
+	qDebug().noquote() << SEPARATOR_MINI << "BIT OPERATIONS" << SEPARATOR_MINI;
+
+
+	{
+		int x{ 0b01010101 };
+		int mask{ 0b11000011 };
+
+		auto xAndMask = x & mask;
+
+		binPrintInt(x);
+		qDebug().noquote() << ANDS;
+		binPrintInt(mask);
+		qDebug().noquote() << EQUALS;
+		binPrintInt(xAndMask);
+	}
+
+	qDebug().noquote() << SEPARATOR;
+
+	{
+		int x{ 0b01010101 };
+		int mask{ 0b11000011 };
+
+		auto xOrMask = x | mask;
+
+		binPrintInt(x);
+		qDebug().noquote() << ORS;
+		binPrintInt(mask);
+		qDebug().noquote() << EQUALS;
+		binPrintInt(xOrMask);
+	}
+
+	qDebug().noquote() << SEPARATOR;
+
+	{
+		int x{ 0b01010101 };
+		int key{ 0b11001011 };
+
+		auto xXorKey = x ^ key;
+
+		binPrintInt(x);
+		qDebug().noquote() << XORS;
+		binPrintInt(key);
+		qDebug().noquote() << EQUALS;
+		binPrintInt(xXorKey);
+		qDebug().noquote() << XORS;
+		/* повторное наложение ключа приводит к получению */
+		/* исходного значения */
+		xXorKey = xXorKey ^ key;
+		qDebug().noquote() << EQUALS;
+		binPrintInt(xXorKey);
+		qDebug().noquote() << XORS;
+		/* можно использовать для замены значений двух переменных */
+		QString message;
+		int a{ 5 };
+		int b{ 10 };
+		message.append(QString("old a=%1; ").arg(a));
+		message.append(QString("old b=%1;\n").arg(b));
+		/* обмен двух значений  */
+		/* a = a+b; может быть переполнение*/
+		/* b = a-b; */
+		/* a = a-b; */
+
+		/* работает только если a != b */
+		if (a != b)
+		{
+			/* шифр */
+			a = a ^ b; /* шифруется 'a' переменной 'b', а т.к. операция симетрична то можно считать что 'b' зашифровано 'a' */
+			/*  */
+			b = a ^ b; /* в 'b' присваиваем зашифрованный 'a' и расшифровываем 'b' значит получаем старое значение 'a' */
+			a = a ^ b; /* расшировываем первое значение шифра 'a' c помощью 'b'(старое а) */
+		}
+		message.append(QString("new a=%1; ").arg(a));
+		message.append(QString("new b=%1;\n").arg(b));
+		qDebug().noquote() << message;
+	}
+
+	qDebug().noquote() << SEPARATOR;
+}
+
+void ADSLecture02Ex01::run()
+{
+	int numberForGetFactors{ 360 };
+	simpleFactors(numberForGetFactors);
+
+	//sf();
+}
+
+
+
+QString ADSLecture02Ex01::byteToString(int x, bool nubbles)
+{
+	QString result;
+
+	int n;
+	for (n = 0; n < 8; n++)
+	{
+		result.append(((x & 0x80) != 0) ? "1" : "0");
+
+		if (nubbles && n == 3)
+		{
+			result.append(" ");
+		}
+
+		x = x << 1;
+	}
+
+	return result;
+}
+
+void ADSLecture02Ex01::binPrintInt(int x, bool nubbles)
+{
+
+	QString intToBynaryString;
+
+	int hi, lo;
+	hi = (x >> 8) & 0xff;
+	lo = x & 0xff;
+
+	intToBynaryString.append(byteToString(hi, nubbles));
+	intToBynaryString.append(nubbles ? " " : "");
+	intToBynaryString.append(byteToString(lo, nubbles));
+
+	qDebug().noquote() << QString("Value %1 in binary: \t%2").arg(x).arg(intToBynaryString);
+}
+
+/* Простые числа: Решето Эратосфена*/
+QList<int> ADSLecture02Ex01::simpleNumbersSeparator()
+{
+	qDebug().noquote() << SEPARATOR_MINI << "SIMPLE NUMBERS SEPARATOR" << SEPARATOR_MINI;
+	QList<QPair<int, int>> numbers;
+	int numbersSize{ 100 };
+
+	QList<int> simpleNumbers;
+
+	enum status
+	{
+		init = 0,
+		simple = 1,
+		removed = 2
+	};
+
+	int simpleNumber{ 2 };
+	for (int i = 0; i < numbersSize + 1; ++i)
+	{
+		numbers.append(QPair<int, bool>{i, status::init});
+	}
+
+	bool allChecked{ false };
+	for (auto simpleNumber = 2; simpleNumber < numbers.size(); ++simpleNumber)
+	{
+		if (numbers[simpleNumber].second != status::removed)
+		{
+			numbers[simpleNumber].second = status::simple;
+			simpleNumbers.append(numbers[simpleNumber].second);
+
+			for (int j = simpleNumber * simpleNumber; j < numbersSize + 1; j += simpleNumber)
+			{
+				numbers[j].second = status::removed;
+			}
+		}
+	}
+
+	QStringList statusStrings{ "Init", "Simple", "Removed" };
+	QString msg{ "Value %1 is %2" };
+	for (const auto & num : qAsConst(numbers))
+	{
+		qDebug().noquote() << msg.arg(num.first).arg(statusStrings[static_cast<int>(num.second)]);
+	}
+
+	qDebug().noquote() << SEPARATOR;
+
+	return simpleNumbers;
+}
+
+
+
+void ADSLecture02Ex01::simpleFactors(int & number)
+{
+	int div{ 2 };
+	const int numberOrigin{ number };
+
+	struct Factor
+	{
+		int _div{ 0 };
+		int _power{ 1 };
+	};
+
+	QList<Factor> factors{ Factor{ 1 } };
+
+	Factor prevFactor;
+
+	while (number > 1)
+	{
+		while (number % div == 0)
+		{
+			number = number / div;
+
+			Factor factor{ div };
+
+			if (!factors.isEmpty())
+			{
+				if (factors.last()._div == factor._div)
+				{
+					factors.last()._power += 1;
+				}
+				else
+				{
+					factors.append(factor);
+				}
+			}
+			else
+			{
+				factors.append(factor);
+			}
+		}
+
+		++div;
+	}
+
+	QStringList result;
+	for (const auto & f : qAsConst(factors))
+	{
+		result.append((f._power > 1) ? QString("%1^%2").arg(f._div).arg(f._power) : QString("%1").arg(f._div));
+	}
+
+	qDebug().noquote() << QString("Factors of num %1:").arg(numberOrigin) << result.join("*");
+}
+
+void ADSLecture02Ex01::sf()
+{
+	int n, div = 2;
+	cout << "N = ";
+	cin >> n;
+	cout << n << " = 1";
+	while (n > 1)
+	{
+		while (n % div == 0)
+		{
+			cout << " * " << div;
+			n = n / div;
+		}
+		div++;
+	}
+	cin.get(); cin.get();
 }

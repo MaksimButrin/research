@@ -1,3 +1,18 @@
+//#include <QDebug>
+//#include <Stroustrup.h>
+//
+//using namespace std;
+//
+//int main(int argc, char *argv[])
+//{
+//	qDebug() << "Stroustrup";
+//	cout << "sssss";
+//	init();
+//
+//	//return 0;
+//}
+
+// <<<<<<<<<<<<<<<<<<< до 2022/05/07 (повторное начало изучения)
 #include "GraphMainWindow.h"
 #include <QtWidgets/QApplication>
 
@@ -10,13 +25,6 @@ int main(int argc, char *argv[])
 
 	return a.exec();
 }
-
-
-
-
-
-
-
 
 
 

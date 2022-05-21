@@ -55,7 +55,7 @@ WhiteBelt::~WhiteBelt()
 void WhiteBelt::runWhiteBelt()
 {
 	//Predicates().run();
-	MftiLessons().run();
+	//MftiLessons().run();
 }
 
 

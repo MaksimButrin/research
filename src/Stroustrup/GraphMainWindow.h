@@ -26,15 +26,20 @@ public:
 	GraphMainWindow(QWidget *parent = Q_NULLPTR);
 	~GraphMainWindow();
 
-	void drawPolygon();
+	void init();
+
+	void drawUsingQtLib();
+	void drawShapeChildren(int children2Show = -1);
 	void drawShape();
 	void drawAxis();
-	void temporary();
 
 private:
 	Ui::MainWindow _ui;
 
 protected:
+	/* перерисовка окна: ,  */
+	/* - виджет был скрыт->открыт */
+	/* - вызваны методы repaint() или update()*/
 	void paintEvent(QPaintEvent *);
 
 };
@@ -52,7 +57,7 @@ private:
 };
 
 
-
+/* ==================================================================================  */
 struct MLineStyle
 {
 	Qt::PenStyle style() const { return _style; }
@@ -69,6 +74,7 @@ private:
 	int _width{ 1 };
 };
 
+/* ==================================================================================  */
 class MShape
 {
 public:
@@ -83,7 +89,8 @@ public:
 	void setLineStyle(MLineStyle ls);
 	MLineStyle lineStyle() const;
 
-	QPen getLinePen() const { return _lPen; };
+	QPen linePen() const { return _lPen; };
+	QVector<QPoint> points() const { return _points; };
 
 	void setFillColor(const QColor & color);
 	QColor fillColor() const;
@@ -96,9 +103,9 @@ public:
 	virtual ~MShape() {}
 
 protected: // разжовано не листе 550
+	MShape(QList<QPoint> lst);		// добавление точек
 
 	MShape() {}
-	MShape(QList<QPoint> lst);		// добавление точек
 	/* использование virtual foo() = 0, говорит о том что foo Обязаны быть перекрытой в производном классе. В этом случае foo является "чистой" */
 	virtual bool drawLines(QPainter * painterDevice) const = 0; // вывод линий
 
@@ -118,6 +125,49 @@ private:
 	MLineStyle _lStyle;
 
 	QPen _lPen;
+};
+
+/* ==================================================================================  */
+/* 13.6 */
+// OpenPolyline определяет фигура, состоящую из ряда отрезков линий, 
+// соединенных между собой и заданных последовательностью точек
+struct MOpenPolyline : MShape // открытая последовательность линий
+{
+	/* Использует конструктор Shape: */
+	/* MShape::MShape - Класс OpenPolyline может использоватль конструкторы */
+	/* определенные в классе Shape. Класс Shape имеет конструтор по умолчанию(9.7.3) */
+	/* и конструктор со списком инициализации (18.2.) */
+	using MShape::MShape; /* using - псевдоним. механизм времени выполнения (раздел А. 16)  */
+	void add(QPoint p) { MShape::add(p); }
+};
+
+
+
+/* 13.7 */
+struct MClosedPolyline : MOpenPolyline // закрытая последовательность линий
+{
+	/* Использует конструктор MOpenPolyline: */
+	using MOpenPolyline::MOpenPolyline;
+	virtual bool drawLines(QPainter * painterDevice) const;
+};
+
+
+
+/* 13.8 - !!!! Не реализовывалось, нет примера */
+/* Замкнутая последовательность непересекающихся отрезков */
+struct MPolygon : MClosedPolyline
+{
+	/* конструторы MClosedPolyline */
+	using MClosedPolyline::MClosedPolyline;
+
+	void add(const QPoint &p);
+	/* почему-то написано что мы унаследовали определение drawLines */
+	//bool drawLines(QPainter * painterDevice) const;
+};
+
+/* 13.9 ЗАКОНЧИЛ ТУТ */
+struct MRectangle : MShape
+{
 };
 
 
@@ -145,7 +195,7 @@ private:
 
 
 
-struct MFunction: MShape
+struct MFunction : MShape
 {
 	/* параметры не сохраняются */
 	MFunction(Fct f, double r1, double r2, QPoint orig, int count = 100, double xScale = 25, double yScale = 25);

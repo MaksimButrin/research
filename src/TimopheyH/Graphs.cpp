@@ -12,8 +12,9 @@ const QString SEPARATOR_MINI{ "===================" };
 
 void init()
 {
-	//graphs::GraphProcess().run(); /
-	graphs::SymbolGraphProcess().run();
+	//graphs::GraphProcess().run();
+	//graphs::SymbolGraphProcess().run();
+	graphs::DigraphProcess().run();
 }
 
 /* 4.1. Неориентированные графы */
@@ -105,9 +106,17 @@ QString Graph::toString()
 
 
 
+GraphProcess::GraphProcess()
+{
+	const QString PATH{ "D:/00 Work/Book/!C++ Books/Teaching/TeachingSolution/tmp/%1" };
+	_paths << QString(PATH.arg("tinyG.txt"));
+	_paths << QString(PATH.arg("tinyDG.txt"));
+}
+
 void GraphProcess::run()
 {
-	QString path{ "D:/00 Work/Book/!C++ Books/Teaching/TeachingSolution/tmp/tinyG.txt" };
+	QString path{ _paths[1] };
+
 	QString localError;
 	if (!readGraph(path, &localError))
 	{
@@ -378,7 +387,7 @@ int SearchInGraph::count()
 
 
 /* =========================== */
-/* поиск в глубину */
+/* поиск в глубину в не ориентированных графах */
 DepthFirstSearch::DepthFirstSearch(const QSharedPointer<Graph> & graph, int sourceVertex)
 {
 	init(graph, sourceVertex);
@@ -616,7 +625,7 @@ void SymbolGraphProcess::run()
 {
 	readGraph("D:/00 Work/Book/!C++ Books/Teaching/TeachingSolution/tmp/routes.txt");
 
-	
+
 	QSharedPointer<SymbolGraph> sGr = QSharedPointer<SymbolGraph>(new SymbolGraph(_edgesList));
 
 	auto gr = sGr->graph();
@@ -635,7 +644,7 @@ void SymbolGraphProcess::run()
 		}
 
 		qDebug().noquote() << SEPARATOR_MINI << "Degrees of separation" << SEPARATOR_MINI;
-		
+
 		int s = sGr->index("HOU");
 		auto bfs = QSharedPointer<BreadFirstPaths>(new BreadFirstPaths(gr, s));
 		qDebug().noquote() << SEPARATOR_MINI << "Paths in graph (breadth first search):" << SEPARATOR_MINI;
@@ -739,6 +748,476 @@ QString SymbolGraph::name(int v)
 	}
 
 	return QString();
+}
+
+/* 4.2.1. Ориентированные графы */
+/* создание графа с v вершинами без рёбер */
+Digraph::Digraph(int v) : _vertices(v), _edges(0)
+{
+	for (int i = 0; i < v; i++)
+	{
+		_adjacent.append(QList<int>());
+	}
+}
+
+int Digraph::vertices() const
+{
+	return _vertices;
+}
+
+
+
+int Digraph::edges() const
+{
+	return _edges;
+}
+
+void Digraph::setEdges(int cnt)
+{
+	_edges = cnt;
+}
+
+
+/* добавление в граф ребра v-w  */
+bool Digraph::addEdge(QPair<int, int> edge, QString *error)
+{
+	auto v = edge.first;
+	auto w = edge.second;
+
+	if (v >= _adjacent.size() || w >= _adjacent.size())
+	{
+		if (error)
+			*error = QString("Wrong vertices(%1,%2) for edge").arg(v).arg(w);
+		return false;
+	}
+	/*
+		в отличии от не ориентированных графов каждое ребро присутствует единожды
+	*/
+	_adjacent[v].prepend(w);
+
+	_edges++;
+
+	return true;
+}
+
+
+/* вершины смежные с v */
+QList<int> Digraph::adjacentOfVertex(int v, QString *error) const
+{
+	if (v >= _adjacent.size())
+	{
+		if (error)
+			*error = QString("Wrong vertex(%1) to get adjacent").arg(v);
+
+		return QList<int>();
+	}
+
+
+	return _adjacent[v];
+}
+
+
+
+QString Digraph::toString()
+{
+	QStringList s{ QString("%1 vertices, %2 edges").arg(_vertices).arg(_edges) };
+	for (int v = 0; v < _vertices; v++)
+	{
+		s << QString("%1:").arg(v);
+		for (const auto & w : adjacentOfVertex(v))
+		{
+			s.last() = QString("%1%2 ").arg(s.last()).arg(w);
+		}
+	}
+	return s.join("\n");
+}
+
+Digraph Digraph::reverse()
+{
+	Digraph result = Digraph(_vertices);
+	for (int v = 0; v < _vertices; v++)
+	{
+		for (auto w : adjacentOfVertex(v))
+		{
+			/* меняем рёбра на обратные */
+			result.addEdge(QPair<int, int>(w, v));
+		}
+	}
+
+	return result;
+}
+
+/* листинг 4.2.2 поиск в глубину. Достижимость в орграфах */
+DirectedDepthFirstSearch::DirectedDepthFirstSearch(const QSharedPointer<Digraph>& graph, QList<int> sources) : _gv(graph->vertices())
+{
+	init(graph, sources);
+}
+
+
+void DirectedDepthFirstSearch::init(const QSharedPointer<Digraph> & graph, QList<int> sources)
+{
+	for (int i = 0; i < graph->vertices(); i++)
+	{
+		_marked.append(false);
+	}
+	for (auto source : sources)
+	{
+		if (!marked(source))
+		{
+			dfs(graph, source);
+		}
+	}
+}
+
+bool DirectedDepthFirstSearch::marked(int v)
+{
+	if (v >= _marked.size())
+	{
+		qDebug().noquote() << QString("Error: Wrong vertex(%1) get marked value").arg(v);
+		return false;
+	}
+
+	return _marked[v];
+}
+
+
+void DirectedDepthFirstSearch::dfs(const QSharedPointer<Digraph> & graph, int vertex)
+{
+	if (vertex >= _marked.size())
+	{
+		qDebug().noquote() << QString("Error: Wrong vertex(%1) to mark of adjacent vertices").arg(vertex);
+		return;
+	}
+
+	_marked[vertex] = true;
+
+	qDebug().noquote() << QString("Info: Vertex(%1) marked").arg(vertex);
+
+	for (const auto w : graph->adjacentOfVertex(vertex))
+	{
+		if (!marked(w))
+		{
+			dfs(graph, w);
+		}
+		else
+		{
+			qDebug().noquote() << QString("Info: Vertex(%1) already marked").arg(w);
+		}
+	}
+}
+
+void DirectedDepthFirstSearch::printReachableList()
+{
+	/* список достижимых вершин */
+	QStringList reachable;
+	for (int v = 0; v < _gv; v++)
+	{
+		if (marked(v))
+		{
+			reachable << QString::number(v);
+		}
+	}
+
+	qDebug().noquote() << QString("Info: reachable list: %1").arg(reachable.join("; "));
+}
+
+
+
+DigraphProcess::DigraphProcess()
+{
+	const QString PATH{ "D:/00 Work/Book/!C++ Books/Teaching/TeachingSolution/tmp/%1" };
+	_paths << QString(PATH.arg("tinyDG.txt"));
+	_paths << QString(PATH.arg("tinyDAG.txt"));
+}
+
+void DigraphProcess::run()
+{
+	//QString path{ _paths[0] }; // Для определения наличия цикла
+	QString path{ _paths[1] }; // Упорядочение вершин
+
+	QString localError;
+	if (!readGraph(path, &localError))
+	{
+		qDebug().noquote() << QString("Error: %1").arg(localError);
+	}
+
+	qDebug().noquote() << SEPARATOR_MINI << "Directed graph:" << SEPARATOR_MINI;
+
+	auto graphToString = _diGraph->toString();
+
+	qDebug().noquote() << graphToString;
+
+	qDebug().noquote() << SEPARATOR_MINI << "Directed depth first search:" << SEPARATOR_MINI;
+
+	// определение достижимости из одного источника (поиск в глубину)
+	//QList<int> sources{ /*1,*/2/*,6*/ };
+	QList<int> sources{ 6 };
+	_diDfs = QSharedPointer<DirectedDepthFirstSearch>(new DirectedDepthFirstSearch(_diGraph, sources));
+	_diDfs->printReachableList();
+
+	qDebug().noquote() << SEPARATOR_MINI << "Directed cycle:" << SEPARATOR_MINI;
+	DirectedCycle dc(_diGraph);
+	dc.printCycle();
+
+	qDebug().noquote() << SEPARATOR_MINI << "Directed depth first order:" << SEPARATOR_MINI;
+	DirectedDepthFirstOrder ddfo(_diGraph);
+	ddfo.print();
+}
+
+
+bool DigraphProcess::readGraph(QString & pathToFile, QString * error)
+{
+	qDebug().noquote() << SEPARATOR_MINI << "Reading the graph file" << SEPARATOR_MINI;
+
+	QFile file(pathToFile);
+	if (!file.exists())
+	{
+		if (error)
+			*error = QString("File does not exist: %1").arg(pathToFile);
+
+		return false;
+	}
+
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		if (error)
+			*error = QString("Something wrong with access to file: %1").arg(pathToFile);
+
+		return false;
+	}
+
+	QTextStream in(&file);
+
+	QString line = in.readLine();
+	int ln{ 0 };
+	bool ok;
+	auto vertices = line.toInt(&ok);
+
+	if (!ok)
+	{
+		if (error)
+			*error = QString("Line %1: Wrong vertices count in the file").arg(ln);
+		return false;
+	}
+
+	qDebug().noquote() << QString("Vertices count: %1").arg(vertices);
+
+	/* Создание экземпляра графа */
+	_diGraph = QSharedPointer<Digraph>(new Digraph(vertices));
+
+	//
+	line = in.readLine();
+	auto edges = line.toInt(&ok);
+	ln++;
+
+	if (!ok)
+	{
+		if (error)
+			*error = QString("Line %1: Wrong edges count in the file").arg(ln);
+		return false;
+	}
+
+	qDebug().noquote() << QString("Edges count: %1").arg(edges);
+
+	_diGraph->setEdges(edges);
+
+	while (!in.atEnd())
+	{
+		QString line = in.readLine();
+		ln++;
+		QStringList vw = line.split(" ");
+		bool result{ true };
+
+		QPair<int, int> edge;
+		if (vw.size() == 2)
+		{
+			edge.first = vw.first().toInt(&ok);
+			result = result && ok;
+			edge.second = vw.last().toInt(&ok);
+			result = result && ok;
+
+			if (result)
+			{
+				QString localError;
+				if (_diGraph->addEdge(edge, &localError))
+				{
+					qDebug().noquote() << QString("Added edge: %1-%2").arg(edge.first).arg(edge.second);
+				}
+				else
+				{
+					if (error)
+						*error = localError;
+
+					return false;
+				}
+			}
+		}
+
+		if (!result)
+		{
+			if (error)
+				*error = QString("Line %1: Wrong edge parameters(%2)").arg(ln).arg(line);
+			return false;
+		}
+
+	}
+
+	qDebug().noquote() << SEPARATOR;
+
+	return true;
+}
+
+
+
+DirectedCycle::DirectedCycle(const QSharedPointer<Digraph>& graph)
+{
+	init(graph);
+	for (int v = 0; v < graph->vertices(); v++)
+	{
+		if (!marked(v))
+		{
+			dfs(graph, v);
+		}
+	}
+}
+
+
+void DirectedCycle::printCycle() const
+{
+	QStringList sl;
+	for (auto ce : _cycle.toList())
+	{
+		sl.append(QString::number(ce));
+	}
+
+	qDebug().noquote() << QString("Info: cycle: %1").arg(sl.isEmpty() ? "No" : sl.join("->"));
+}
+
+void DirectedCycle::init(const QSharedPointer<Digraph>& graph)
+{
+	for (size_t i = 0; i < graph->vertices(); i++)
+	{
+		_marked.append(false);
+		_onStack.append(false);
+		_edgeTo.append(-1);
+	}
+}
+
+void DirectedCycle::dfs(const QSharedPointer<Digraph>& graph, int v)
+{
+	qDebug().noquote() << QString("Info: dfs(..., %1)").arg(QString::number(v));
+
+	if (hasCycle())
+	{
+		return;
+	}
+
+	setOnStack(v, true);
+	setMarked(v, true);
+
+	for (int w : graph->adjacentOfVertex(v))
+	{
+		if (hasCycle())
+		{
+			return;
+		}
+		else if (!marked(w))
+		{
+			qDebug().noquote() << QString("Info: edge to %2->%1").arg(QString::number(w)).arg(QString::number(v));
+			setEdgeTo(w, v);
+			dfs(graph, w);
+		}
+		else if (onStack(w))
+		{
+			qDebug().noquote() << QString("Info: on stack %1").arg(QString::number(w));
+
+			auto hc = false;
+			for (int x = v; x != w; x = edgeTo(x))
+			{
+				qDebug().noquote() << QString("Warn: cycle push: x=%1").arg(QString::number(x));
+				_cycle.push(x);
+			}
+			qDebug().noquote() << QString("Warn: cycle push: w=%1").arg(QString::number(w));
+			_cycle.push(w);
+			qDebug().noquote() << QString("Warn: cycle push: v=%1").arg(QString::number(v));
+			_cycle.push(v);
+
+		}
+	}
+
+	setOnStack(v, false);
+
+}
+
+DirectedDepthFirstOrder::DirectedDepthFirstOrder(const QSharedPointer<Digraph>& graph)
+{
+	init(graph);
+	for (int v = 0; v < graph->vertices(); v++)
+	{
+		if (!marked(v))
+		{
+			dfs(graph, v);
+		}
+	}
+}
+
+void DirectedDepthFirstOrder::print()
+{
+	{
+		QStringList sl;
+		for (auto ce : pre())
+		{
+			sl.append(QString::number(ce));
+		}
+
+		qDebug().noquote() << QString("Info: Preorder: %1").arg(sl.join("->"));
+	}
+	{
+		QStringList sl;
+		for (auto ce : post())
+		{
+			sl.append(QString::number(ce));
+		}
+
+		qDebug().noquote() << QString("Info: Postorder: %1").arg(sl.join("->"));
+	}
+	{
+		QStringList sl;
+		QStack<int> rp = reversePost();
+		while (!rp.isEmpty())
+		{
+			sl.append(QString::number(rp.pop()));
+		}
+
+		qDebug().noquote() << QString("Info: Reverse postorder: %1").arg(sl.join("->"));
+	}
+}
+
+void DirectedDepthFirstOrder::init(const QSharedPointer<Digraph>& graph)
+{
+	for (size_t i = 0; i < graph->vertices(); i++)
+	{
+		_marked.append(false);
+	}
+}
+
+void DirectedDepthFirstOrder::dfs(const QSharedPointer<Digraph>& graph, int v)
+{
+	//qDebug().noquote() << QString("Info: dfs(..., %1)").arg(QString::number(v));
+
+	setMarked(v, true);
+
+	_pre.enqueue(v);
+
+	for (int w : graph->adjacentOfVertex(v))
+	{
+		if (!marked(w))
+		{
+			dfs(graph, w);
+		}
+	}
+	_post.enqueue(v);
+	_reversePost.push(v);
 }
 
 } //namespace graphs

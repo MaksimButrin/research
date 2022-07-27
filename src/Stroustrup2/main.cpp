@@ -1,9 +1,13 @@
-#include <qdebug.h>
-#include <Stroustrup2.h>
+//#include "HomeWork.h"
+//#include "Stroustrup2.h"
+#include "SVector.h"
+//#include "Inheritance.h"
 
 int main(int argc, char *argv[])
 {
-	qDebug() << "Stroustrup2";
+	qDebug() << "====== Stroustrup #2 =======";
 
-	run();
+	sv::run();
+	//inh::run();
+	//hw::run();
 }

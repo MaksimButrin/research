@@ -2,216 +2,64 @@
 #include <QDebug>
 #include <QSharedPointer>
 
-const QString SEPARATOR{ "===============================================" };
-const QString SEPARATOR_MINI{ "===================" };
-
-void run()
+void UsingMDateFoo1(MDate d1, MDate d2)
 {
-	//SVector v(5);
-
-	//char c = 97;
-	//qDebug() << c;;
-	//qDebug() << static_cast<int>(c);
-	TestLink2 tl1();
-	TestLink2 tl2;
-	TestLink2 tl3{};
-
-	tl3.run();
+	/* ??? к чему бы это?: */
+/* Откуда функции Date : : month ( ) известно, что при первом вызове следует
+вернуть значение переменной dl._m, а при втором - d2._m? */
+/*	Функции - члены класса, такие как MDate::month(), получают неявный аргумент,
+	позволяющий идентифицировать объект, для которого они вызываются.
+	Таким образом, при первом вызове переменная _m правильно ссылается
+	на dl._m, а при втором - на d2._m. Другие варианты использования
+	неявного аргумента описаны в разделе 17.10 */
+	std::cout << d1.month() << " " << d2.month() << "\n";
 }
 
-/* записки про указатели */
-void infoPointers()
+
+/* 9.4.4 ==================================================================== */
+MDate::MDate(int yy, int mm, int dd) // конструктор
+: _y(yy), _m(mm), _d(dd) // список инициализации членов
+// !!! нужно бы уточнить в какой момент времени это выполняется (у Хирьянов было)
 {
-	/* стр ...650... */
-	/* оператор new делает доступной динамическую память (которую ещё называют КУЧЕй) */
-	/* а память выделяемая для использования при вызове ф-ии для хранения ее аргументов и лок. пер. - СТЭКОМ */
-	/* в данном случае инструкция просит систему поддержки выполнения программ резместить четыре числа типа double */
-	/* в ДИНАМИЧЕСКОЙ памяти (куче) и вернуть указательна первое из них */
-	double *p = new double[4]; /* размещаем 4ре числа в куче (динамической памяти) */
-	/* количество элментов может в данном случае задаваться переменной */
-	int n{ 5 };
-	double *pd = new double[n];
-	/* разрешение присваивания друг другу указателей разных типов привело бы */
-	/* к TYPE ERROR - ошибкам типов */
-
-	/* ИНИЦИАЛИЗАЦИЯ */
-	/* обявлять указатели без инициализации ОПАСНО */
-	/* если указано кол-во инициализированных элементов */
-	int *p1 = new int[4]{ 0,1,2 };
-	/* как здесь, то размер массива указывать не обязательно */
-	/* НО в моем компиляторе - ОШИБКА */
-	// int *p2 = new int[] { 0, 1, 2, 4 };
-	SVector *sv = new SVector(5);
-
-	//QSharedPointer<SVector> shp1 = QSharedPointer<SVector>::create(5);
-	//QSharedPointer<SVector> shp2 = QSharedPointer<SVector>(new SVector(5));
-	//QSharedPointer<SVector> shp3(new SVector(5));
-
 }
 
-/* 17. Векторы и динамическое выделение памяти */
-/* 17.2. Основы */
-SVector::SVector(int s) :
-	/* инициализация члена _sz */
-	_sz(s),
-	/* инициализация члена _elem */
-	_elem{ new double[s] }
+/*
+Определение функции-члена в классе приводит к следующим последствиям.
+ - Функция становится встраиваемой (inline), т.е . компилятор будет
+пытаться вместо вызова функции генерировать ее код
+...
+*/
+void MDate::addDay(int n)
 {
-	/* инициализация элементов */
-	for (int i = 0; i < s; i++)
+}
+
+MYear::MYear(int y): _y(y)
+{
+	if (y < MIN || y > MAX)
 	{
-		_elem[i] = 0;
-	}
-	// printSizes();
-}
-
-SVector::~SVector()
-{
-	/* освобождение памяти выделенной с помощью оператора new для массива объектов */
-	delete[] _elem;
-	/* delete без [] - освобождает память выделенную с помощью оператора new для отдельного объекта */
-	double * p = new double(8.8);
-	delete p;
-}
-
-void SVector::printSizes()
-{
-	qDebug().noquote() << SEPARATOR;
-	char ch;
-	int i;
-	int * pi;
-
-	qDebug().noquote() << QString("size of 'char': ") << sizeof(ch);
-	qDebug().noquote() << QString("size of 'i': ") << sizeof(i);
-	qDebug().noquote() << QString("size of 'pi': ") << sizeof(pi);
-}
-
-
-WorkWithSvector::WorkWithSvector()
-{
-
-
-
-	run();
-}
-
-
-WorkWithSvector::~WorkWithSvector()
-{
-}
-
-void WorkWithSvector::run()
-{
-	f3(5);
-}
-
-
-void WorkWithSvector::f3(int n)
-{
-	/* выделяем память для n чисел типа double */
-	double*p = new double[n];
-	/* определяем вектор (выделяем память для n других double) */
-	SVector v(n);
-	
-	/* используем 'v' и 'p' */
-	/* .... */
-
-	/* освобождаем паять, занятую массивом чисел типа double */
-	delete[] p;
-
-} // SVector автоматически освободит память, занятую объектом 'v'.
-
-
-
-TestLink2::TestLink2()
-{
-	
-}
-
-TestLink2::~TestLink2()
-{
-}
-
-void TestLink2::run()
-{
-	init(_v);
-	print(_v);
-
-	changeValueByUsingLink(_v);
-	qDebug().noquote() << SEPARATOR;
-	print(_v);
-
-	changeLineByUsingLink(_v);
-	qDebug().noquote() << SEPARATOR;
-	print(_v);
-}
-
-void TestLink2::init(QVector<QVector<int>> &v)
-{
-	int height{ 6 };
-	int width{ 5 };
-
-	for (int h = 0; h < height; h++)
-	{
-		QVector<int> wv;
-		for (int w = 0; w < width; w++)
-		{
-			wv.append(h * 10 + w);
-		}
-
-		v.append(wv);
-	}
-
-}
-
-void TestLink2::print(const QVector<QVector<int>>& v)
-{
-	for (int h = 0; h < v.size(); h++)
-	{
-		QStringList line;
-		for (int w = 0; w < v[h].size(); w++)
-		{
-			line << QString("\t[%1][%2] = %3").arg(QString::number(h)).arg(QString::number(w)).arg(QString::number(v[h][w]));
-		}
-		qDebug().noquote() << line.join(";");
+		/*
+		В языке C++ оператор throw используется для сигнализирования о возникновении исключения или ошибки (аналогия тому, когда свистит арбитр). Сигнализирование о том, что произошло исключение, называется генерацией исключения (или «выбрасыванием исключения»
+		*/
+		//throw Invalid{};
 	}
 }
 
-void TestLink2::changeValueByUsingLink(QVector<QVector<int>> &v)
+MDate2::MDate2()
+	: _y{ defaultDate().year() },
+	_m{ defaultDate().month() },
+	_d{ defaultDate().day() }
 {
-	int h{ 3 };
-	int w{ 3 };
-	/* ссылка на элемент v[h][w] */
-	int & var = v[w][h]; //ключевое свойство ссылок - ссылка может служить "аббревиатурой" объекта.
-	var = 99;
-
 }
 
-void TestLink2::changeLineByUsingLink(QVector<QVector<int>>& v)
+const MDate2 & MDate2::defaultDate()
 {
-	int h{ 4 };
-	/* ссылка на элемент v[h][w] */
-	auto & line = v[h];
-	for (int w = 0; w < line.size(); w++)
-	{
-		line[w] = line[w] * 2;
-	}
-}
+	/*
+	Ключевое слово static здесь использовано для того, чтобы переменная dd
+	создавалась только один раз, а не каждый раз при очередном вызове функции
+	defaultDate() . Инициализация этой переменной происходит при
+	первом вызове функции defaultDate()
+	*/
 
-//TestLink::TestLink()
-//{
-//}
-//
-//TestLink::~TestLink()
-//{
-//}
-//
-//
-//inline void TestLink::printXx()
-//{
-//}
-//
-//inline void TestLink::setLinkVal(int & x)
-//{
-//&_xxLink = x;
-//}
+	static MDate2 dd{ 2001, MMonth::jan, 1 };
+	return dd;
+}

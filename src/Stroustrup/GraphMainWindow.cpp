@@ -4,7 +4,6 @@
 #include <QGraphicsWidget>
 #include <QtCharts/QChartView>
 #include <QTextItem>
-#include <qdebug.h>
 
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
@@ -175,6 +174,39 @@ void GraphMainWindow::drawAxis()
 	this->setCentralWidget(chartView);
 }
 
+
+
+void GraphMainWindow::copyConstructorRemove(/*MOpenPolyline & op, const MCircle & ci*/)
+{
+	// Также если в сигнатуре используются класс с удаленными копирующимим конструкторами и копирующим присваиванием
+	// то будет ошибки компиляции:
+	// - syntax error: identifier 'MOpenPolyline'
+	// - 'void GraphMainWindow::copyConstructorRemove(MOpenPolyline &,const MCircle &)': overloaded member function not found in 'GraphMainWindow'
+
+	MCircle ci1(QPoint(), 5);
+	MCircle ci2(QPoint(), 5);
+	// Ошибка: копирующий конструктор удалён
+	// Ошибки компилятора:
+	// function "MCircle::MCircle(const MCircle &)" (declared implicitly) cannot be referenced -- it is a deleted function
+	// 'MCircle::MCircle(const MCircle &)': attempting to reference a deleted function
+	//MCircle ci3 = ci2; 
+
+
+	// Ошибка: копирующий конструктор удалён
+	// Ошибка компилятора - 'MCircle &MCircle::operator =(const MCircle &)': attempting to reference a deleted
+	//QVector<MCircle> v;
+	//v.push_back(ci1);
+
+	/* ошибка: присваивание удалено */
+	// Ошибки компилятора 
+	//- function "MCircle::operator=(const MCircle &)" (declared implicitly) cannot be referenced -- it is a deleted function
+	//- 'MCircle &MCircle::operator =(const MCircle &)': attempting to reference a deleted function
+
+	//ci2 = ci1; 
+}
+
+
+
 void GraphMainWindow::init()
 {
 
@@ -200,16 +232,106 @@ void GraphMainWindow::paintEvent(QPaintEvent *)
 		c2.draw(&divecePainter);
 	}
 
-	QPair<QPoint, QPoint> p{ QPoint(150,150), QPoint(400,400) };
-	
-	QList<QPoint> mopList{ QPoint(150,150), QPoint(400,400) };
-	/* ХЕРНЯ... не получается использовать конструктор */
-	//MShape::MShape op(mopList);
-	//drawUsingQtLib();
-	//drawShapeChildren(0);
-	//drawShapeChildren(1);
+	if (false)
+	{
+		/* почему список нельзя в конструктор ??? ошибка компиляции */
+		QList<QPoint> list{ QPoint{ 100, 100 }, QPoint{ 150, 200 }, QPoint{ 250, 250 }, QPoint{ 300, 200 } };
+		MOpenPolyline opl(list);
+		opl.setLineColor(Qt::GlobalColor::red);
+		opl.setLineStyle(MLineStyle(2));
+		opl.draw(&divecePainter);
+	}
+	if (false)
+	{
+		QList<QPoint> list{ QPoint{100, 100}, QPoint{150, 200}, QPoint{250, 250}, QPoint{300, 200} };
+		MClosedPolyline cpl(list);
+		cpl.setLineColor(Qt::GlobalColor::red);
+		cpl.setLineStyle(MLineStyle(2));
+		cpl.draw(&divecePainter);
+	}
 
-	//	MFunction f1{ slope, R_MIN, R_MAX, ORIG, N_POINTS, X_SCALE, Y_SCALE};
+	if (true)
+	{
+		//!!! обрати ВНИМАНИЕ, что используем указатель не наследника а именно указатель родителя (но можно и наследника)
+		QList<MShape*> listBlue{ };
+		// замена Shape* q = fct(); из примера на л.664
+		listBlue.append(getMFunctionPtr(&divecePainter));
+		listBlue.append(new MFunction{ slope, (double)R_MIN, (double)R_MAX, ORIG, N_POINTS, (double)X_SCALE, (double)Y_SCALE });
+		listBlue.append(new MFunction{ square, (double)R_MIN, (double)R_MAX, ORIG, N_POINTS, (double)X_SCALE, (double)Y_SCALE });
+		//MFunction f4{ slopeCos, (double)R_MIN, (double)R_MAX, ORIG, N_POINTS, (double)X_SCALE, (double)Y_SCALE };
+
+		for (const auto f : listBlue)
+		{
+			f->setLineColor(Qt::GlobalColor::blue);
+			f->setLineStyle(MLineStyle(2));
+			f->draw(&divecePainter);
+			// освобождение памяти, выделенной под указатели с использованием оператора new
+			delete f;
+		}
+		
+
+		MFunction f5{ [](double x) { return cos(x) + slope(x);  },
+			(double)R_MIN, (double)R_MAX, ORIG, N_POINTS, (double)30, (double)30 };
+
+		QList<MFunction*> listRed{ &f5 };
+		for (const auto f : listRed)
+		{
+			f->setLineColor(Qt::GlobalColor::red);
+			f->setLineStyle(MLineStyle(2));
+			f->draw(&divecePainter);
+		}
+	}
+
+	if (false)
+	{
+		MLines ls = QList<QPair<QPoint, QPoint>>{
+			{ QPoint{100, 100}, QPoint{200,100} },
+			{ QPoint{150, 50}, QPoint{150,150} }
+		};
+
+		ls.setLineColor(Qt::GlobalColor::red);
+		ls.setLineStyle(MLineStyle(2));
+		ls.draw(&divecePainter);
+
+		divecePainter.setPen(Qt::GlobalColor::blue);
+		divecePainter.drawText(QPoint(50, 50), QString("String ... "));
+	}
+
+	if (false)
+	{
+		int length{ 300 };
+		QPoint xy{ 250, 300 };
+		MAxis xAxis(MAxis::Orientation::x, QPoint{ xy.x() - length / 2, xy.y() }, length, 10, QString("x"));
+		MAxis yAxis(MAxis::Orientation::y, QPoint{ xy.x(), xy.y() + length / 2 }, length, 10, QString("y"));
+		QList<MAxis*> list{ &xAxis, &yAxis };
+		for (const auto axis : list)
+		{
+			axis->setLineColor(Qt::GlobalColor::blue);
+			axis->setLineStyle(MLineStyle(2));
+			axis->draw(&divecePainter);
+
+			// delete axis - здесь выдаёт ошибку доступа, потому что динамическая память не выделялась  
+			// (объекты были созданы на стеке а не в куче)
+		}
+	}
+
+	// не компилируется - не конфертируется lambda в Fct
+	// хотя у страуса написано что должно
+	if (false)
+	{
+		for (int n = 0; n < 50; ++n)
+		{
+			/* очередное приближение */
+			auto fct = [n](double x) { return expe(x, n);  };
+			//auto f = new MFunction { fct,
+			//		(double)R_MIN, (double)R_MAX, ORIG, 200, (double)X_SCALE, (double)Y_SCALE };
+
+			//f->setLineColor(Qt::GlobalColor::red);
+			//f->setLineStyle(MLineStyle(2));
+			//f->draw(&divecePainter);
+		}
+	}
+
 }
 
 /* ==================================================================================  */
@@ -248,8 +370,6 @@ MLine::MLine(QPainter *painter, const int * points)
 
 bool MShape::draw(QPainter * painterDevice)
 {
-
-
 	if (!painterDevice)
 		return false;
 
@@ -266,7 +386,8 @@ bool MShape::draw(QPainter * painterDevice)
 
 	auto result{ drawLines(painterDevice) };
 
-	// Восстанавливаем значения по умолчанию ? нах ?
+	// Восстанавливаем значения по умолчанию: в библиотеке из примера (FLTK) не предусмотрен способ идентификации текущего стиля
+	// как в Qt? - вопрос
 	_lPen.setColor(defaultLineColor());		// цвет линии
 	_lPen.setWidth(MLineStyle().width());	// толщина линии
 	_lPen.setStyle(MLineStyle().style());	// стиль линии
@@ -355,6 +476,8 @@ MShape::MShape(QList<QPoint> lst)
 
 bool MShape::drawLines(QPainter * painterDevice) const
 {
+	/* Проверено! Работает */
+
 	if (!painterDevice)
 		return false;
 
@@ -363,17 +486,24 @@ bool MShape::drawLines(QPainter * painterDevice) const
 
 	if (lineColor() != Qt::GlobalColor::transparent)
 	{
-		//int points[] = { p.first.x(), p.first.y(), p.second.x(), p.second.y() };
-
-		QPolygon poly;
-
-		for (int i = 0; i < points().size(); i++)
-		{
-			poly.setPoint(i, points()[i]);
-		}
 
 		painterDevice->setPen(linePen());
-		painterDevice->drawPolygon(poly);
+
+		for (int i = 1; i < points().size(); i++)
+		{
+			painterDevice->drawLine(points()[i - 1], points()[i]);
+		}
+
+
+		/* Отрисовка полигона, нам не подходит, т.к. нужно рисовать именно линии */
+		//QPolygon poly(points().size());
+
+		//for (int i = 0; i < points().size(); i++)
+		//{
+		//	poly.setPoint(i, points()[i]);
+		//}
+
+		//painterDevice->drawPolygon(poly);
 	}
 
 
@@ -446,6 +576,12 @@ void MCircle::setRadius(int radius)
 /* ============================================  */
 MFunction::MFunction(Fct f, double r1, double r2, QPoint orig, int count, double xScale, double yScale)
 {
+	// Строит график функции f(x) для х из диапазона[r1, r2),
+	// используя count отрезков. Начало координат (0,0)
+	// располагается в точке ху;
+	// координаты х масштабируются множителем xscale;
+	// координаты у масштабируются множителем yscale
+
 	if ((r2 - r1) <= 0)
 	{
 		qDebug().noquote() << "Bad graphing range";
@@ -468,16 +604,18 @@ MFunction::MFunction(Fct f, double r1, double r2, QPoint orig, int count, double
 
 }
 
-double one()
+/* горизонтальная линия */
+double one(double x)
 {
 	return 1.0;
 }
 
+/* наклонная линия */
 double slope(double x)
 {
 	return x / 2.0;
 }
-
+/* парабола симметричная относительно оси y */
 double square(double x)
 {
 	return x * x;
@@ -488,12 +626,75 @@ double slopeCos(double x)
 	return cos(x) + slope(x);
 }
 
+// factorial(n) ; п !
+int fac(int n)
+{
+	int r = 1;
+	while (n > 1)
+	{
+		r *= n;
+		--n;
+	};
+
+	return r;
+}
+
+// n-й член ряда
+double term(double x, int n)
+{
+	return pow(x, n) / fac(n);
+}
+
+//экспонента с точностью до n-членов:
+// сумма n членов для значения x
+double expe(double x, int n)
+{
+	double sum{ 0.0 };
+	for (int i = 0; i < n; ++i)
+	{
+		sum += term(x, i);
+	}
+	return sum;
+}
+
+
+void printError(const QString & err)
+{
+	qDebug().noquote() << QString("Error: %1").arg(err);
+
+	Q_ASSERT(!err.isEmpty());
+}
+
+// 17.5.2. Деструкторы и динамическая память
+// замена MShape * fct() на листе 664
+MShape * getMFunctionPtr(QPainter * painterDevice)
+{
+	// При выходе из функции getMFunctionPtr() объект label класса MLabel, существующий в ней, 
+	// уничтожается вполне корректно, если он бы наследовался от МShape (про это смотри ниже).
+	auto label = MLabel{ QPoint{200, 200},QString("Annemarine") };
+	painterDevice->setPen(Qt::GlobalColor::green);
+	painterDevice->drawText(label._xy, label._labelText);
+
+	// данный указатель должен быть удалён извне (об этом ниже)
+	MShape * p = new MFunction{ one, (double)R_MIN, (double)R_MAX, ORIG, N_POINTS, (double)X_SCALE, (double)Y_SCALE };
+	
+	/*
+	Инструкция delete q вызывает деструктор ~Shape() класса Shape. Однако деструктор ~Shape() является виртуальным, 
+	поэтому с помощью механизма вызова виртуальной функции (см. раздел 14.3.1) он вызывает деструктор класса, 
+	производного от класса Shape, в данном случае - деструктор ~MLabel()(я не делал производным MLabel от MShape). 
+	Если бы деструктор Shape::~Shape() не был виртуальным, то деструктор MLabel::~MLabel() не был бы вызван и 
+	член класса MLabel, имеющий тип string, не был бы корректно уничтожен
+	*/
+	return p;
+}
+
+
 
 // ============================================================================ 
 
 bool MClosedPolyline::drawLines(QPainter * painterDevice) const
 {
-	/* !!! НЕ проверлось на корректность выполнения  */
+	/* Проверено! Работает  */
 	if (!painterDevice)
 		return false;
 
@@ -505,16 +706,10 @@ bool MClosedPolyline::drawLines(QPainter * painterDevice) const
 	/* вывод замыкающей линии */
 	if (lineColor() != Qt::GlobalColor::transparent)
 	{
-		QPolygon poly;
-
 		if (points().size() >= 2)
 		{
-			poly.setPoint(0, points()[points().size() - 1]);
-			poly.setPoint(1, points()[0]);
+			painterDevice->drawLine(points()[points().size() - 1], points()[0]);
 		}
-
-		painterDevice->setPen(linePen());
-		painterDevice->drawPolygon(poly);
 	}
 
 
@@ -528,4 +723,170 @@ void MPolygon::add(const QPoint & p)
 	/* реализовать проверку того, что новая линия не пересекает существующие */
 	//intersect(); /* проверка на пересение линий, вызывать нужно N^2 раз - неэффективно */
 	MClosedPolyline::add(p);
+}
+
+/* 13.9 Прямоугольник */
+MRectangle::MRectangle(QPoint xy, int width, int height)
+	: _w(width), _h(height)
+{
+	if (_w <= 0 || _h <= 0)
+	{
+		// не положительная сторона
+		printError("MRectangle: not the positive side of the rectangle");
+	}
+
+	add(xy);  // MShape::add
+}
+
+MRectangle::MRectangle(QPoint x, QPoint y)
+	: _w(y.x() - x.x()), _h(y.y() - x.y())
+{
+	if (_w <= 0 || _h <= 0)
+	{
+		// первая точка не левая верхняя
+		printError("MRectangle: first point is not top left");
+	}
+
+	add(x);  // MShape::add
+}
+
+void MRectangle::drawLines() const
+{
+	Q_ASSERT(true); // НЕ ДОДЕЛАНО!
+	//
+	// alpha() = 0 - полностью прозрачена
+	// ПОКА (стр. 518) не понятно что вызывается и для чего
+	if (fillColor().alpha() != 0) // заполнение
+	{
+		// fl_color впервые упоминается тут и Задает цвет для всех последующих операций рисования (FLTK)
+		// fl_color(fill_color().as_int());
+		// fl_rectf (point(0).x,point(0).y,w ,h); // функция для рисования заполненного прямоугольника
+	}
+	// не понятно что за метод color() скорее всего это текущий цвет
+	//if (color().alpha() != 0) // линии поверх заполнения
+	//{
+		// fl_color(fill_color().as_int());
+		// fl_rect (point(0).x,point(0).y,w ,h); // функция для рисования пустого прямоугольника
+	//}
+}
+
+MLines::MLines(const QList<QPair<QPoint, QPoint>> & lst)
+{
+	for (const auto p : lst)
+	{
+		add(p);
+	}
+}
+
+bool MLines::drawLines(QPainter * painterDevice) const
+{
+	if (!painterDevice)
+		return false;
+
+	if (points().size() == 0)
+		return false;
+
+	if (lineColor() != Qt::GlobalColor::transparent)
+	{
+		painterDevice->setPen(linePen());
+
+		for (int i = 1; i < numberOfPoints(); i += 2)
+		{
+			painterDevice->drawLine(points()[i - 1], points()[i]);
+		}
+	}
+
+	return true;
+}
+
+void MLines::add(const QPair<QPoint, QPoint>& lineByPoints)
+{
+	MShape::add(lineByPoints.first);
+	MShape::add(lineByPoints.second);
+}
+
+
+MAxis::MAxis(Orientation d, QPoint xy, int length, int numberOfNotches, QString & label)
+{
+	if (length <= 0)
+	{
+		qDebug().noquote() << "Wrong length";
+		return;
+	}
+
+	switch (d)
+	{
+	case MAxis::x:
+	{
+		/* линия оси */
+		MShape::add(xy);
+		MShape::add(QPoint{ xy.x() + length, xy.y() });
+		/* добавление делений */
+		if (numberOfNotches > 0)
+		{
+			int dist = length / numberOfNotches;
+			int x = xy.x() + dist;
+			for (int i = 0; i < numberOfNotches; ++i)
+			{
+				_noches.add(QPair<QPoint, QPoint>{QPoint{ x, xy.y() }, QPoint{ x,xy.y() - 5 }});
+				x += dist;
+			}
+		}
+		/* метка под линией */
+		_label = MLabel{ QPoint{xy.x(), xy.y() + 10},label };
+
+		break;
+	}
+	case MAxis::y:
+	{
+		/* ось y, идущая вверх */
+		MShape::add(xy);
+		MShape::add(QPoint{ xy.x(), xy.y() - length });
+		/* добавление делений */
+		if (numberOfNotches > 0)
+		{
+			int dist = length / numberOfNotches;
+			int y = xy.y() - dist;
+			for (int i = 0; i < numberOfNotches; ++i)
+			{
+				_noches.add(QPair<QPoint, QPoint>{QPoint{ xy.x(), y }, QPoint{ xy.x() + 5, y }});
+				y -= dist;
+			}
+		}
+		/* метка вверху */
+		_label = MLabel{ QPoint{xy.x() - 10, xy.y() - length},label };
+		break;
+	}
+	case MAxis::z:
+		break;
+	default:
+		break;
+	}
+}
+
+bool MAxis::drawLines(QPainter * painterDevice) const
+{
+	if (!painterDevice)
+		return false;
+
+	if (points().size() == 0)
+		return false;
+
+	MShape::drawLines(painterDevice);
+	_noches.drawLines(painterDevice);
+
+	painterDevice->setPen(Qt::GlobalColor::blue);
+	painterDevice->drawText(_label._xy, _label._labelText);
+
+	return true;
+}
+
+void MAxis::move(int xx, int xy)
+{
+}
+
+void MAxis::setLineColor(const QColor & color)
+{
+	MShape::setLineColor(color);
+	_noches.setLineColor(color);
 }

@@ -20,7 +20,7 @@ void infoPointers();
 
 /* 17. Векторы и динамическое выделение памяти */
 /* 17.2. Основы */
-class SVector
+template<typename T> class SVector
 {
 public:
 	/* конструктор по умолчанию */
@@ -33,7 +33,7 @@ public:
 	// 18.2 Инициализация
 	// конструктор со списком инициализации
 	// lst передается по значению - требование языка  (Б.6.4)
-	SVector(std::initializer_list<double> lst);
+	SVector(std::initializer_list<T> lst);
 
 	// 18.3.1 копирующие конструкторы
 	SVector(const SVector & arg); // копирующий конструктор/конструктор копирования
@@ -52,12 +52,12 @@ public:
 	// писать можно используя разыменование но *v[i] = x - не красиво
 	//double * operator[](int n) { return &_elem[n]; };
 	// возвращает ссылку для НЕ Константных векторов
-	double & operator[](int n) { return _elem[n]; };  // вот теперь всё хорошо
+	T & operator[](int n) { return _elem[n]; };  // вот теперь всё хорошо
 	// 18.5.1. Константная перегрузка
 	// копирует для константных векторов малого размера,
 	// double operator[](int n) const { return _elem[n]; };
 	// для больших размеров лучше использовать ссылку
-	double & operator[](int n) const { return _elem[n]; };
+	T & operator[](int n) const { return _elem[n]; };
 
 	/* 17.5 деструкторы */
 
@@ -65,7 +65,7 @@ public:
 	/* чтение */
 	double get(int n) const;
 	/* запись */
-	void set(int n, double v);
+	void set(int n, T v);
 
 	/* 19.2.2. Функции reserve и capacity */
 	/* добавление памяти для новых элементов */
@@ -74,7 +74,7 @@ public:
 	/* 19.2.3. Функция resize */
 	void resize(int newSize);
 	/* 19.2.4. Функция push_back */
-	void pushBack(double d);
+	void pushBack(T& d);
 // вспомогательные
 public:
 	void print() const;
@@ -85,7 +85,7 @@ private:
 	/* кол-во элементов плюс "свободное место"/"слоты" для новых элементов (текущий выделенный размер) */
 	int _space{ 0 };
 	/* указатель на первый элемент (типа double) */
-	double * _elem = nullptr;
+	T * _elem = nullptr;
 
 
 };

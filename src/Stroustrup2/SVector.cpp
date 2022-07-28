@@ -56,11 +56,12 @@ void infoPointers()
 
 /* 17. Векторы и динамическое выделение памяти */
 /* 17.2. Основы */
-SVector::SVector(int s)  // через : это список инициализации членов класса
+template<typename T>
+SVector<T>::SVector(int s)  // через : это список инициализации членов класса
 	/* инициализация члена _sz */
 	: _sz(s),
 	/* инициализация члена _elem, выделение памяти */
-	_elem{ new double[s] }
+	_elem{ new T[s] }
 {
 	qDebug().noquote() << QString("'SVector', size %1: called Costructor").arg(_sz);
 
@@ -72,10 +73,11 @@ SVector::SVector(int s)  // через : это список инициализ�
 
 }
 
-SVector::SVector(std::initializer_list<double> lst)
+template<typename T>
+SVector<T>::SVector(std::initializer_list<T> lst)
 	: _sz{ (int)lst.size() },
 	// неинициализированная память
-	_elem{ new double[(int)lst.size()] }
+	_elem{ new T[(int)lst.size()] }
 {
 	// initializer_list НЕ поддерживает оператор индексации([])
 	//инициализация с помощью std::copy();(раздел Б.5.2)
@@ -83,15 +85,16 @@ SVector::SVector(std::initializer_list<double> lst)
 }
 
 
-
-SVector::SVector(const SVector & arg)
+template<typename T>
+SVector<T>::SVector(const SVector & arg)
 // размещает элементы, инициализирует их копированием
-	: _sz{ arg._sz }, _elem{ new double[arg._sz] }
+	: _sz{ arg._sz }, _elem{ new T[arg._sz] }
 {
 	std::copy(arg._elem, arg._elem + _sz, _elem);
 }
 
 // делаем данный вектор копией source
+template<typename T>
 SVector & SVector::operator=(const SVector & source)
 {
 	// версия из 18.3.2 копирующее присваивание
@@ -135,7 +138,8 @@ SVector & SVector::operator=(const SVector & source)
 	return *this; //возврат ссылки на себя
 }
 
-SVector::SVector(SVector && a)
+template<typename T>
+SVector<T>::SVector(SVector && a)
 // копируем elem и size из 'a'
 	: _sz{ a._sz }, _elem{ a._elem }
 {
@@ -145,6 +149,7 @@ SVector::SVector(SVector && a)
 }
 
 // Перемещаем source в текущий вектор
+template<typename T>
 SVector & SVector::operator=(SVector && source)
 {
 	delete[] _elem; // освобождение старой памяти
@@ -157,32 +162,34 @@ SVector & SVector::operator=(SVector && source)
 	return *this; // возврат ссылки на себя
 }
 
-SVector::~SVector()
+template<typename T>
+SVector<T>::~SVector()
 {
 	qDebug().noquote() << QString("'SVector', size %1: called Destructor").arg(_sz);
 
 	/* освобождение памяти выделенной с помощью оператора new для массива объектов */
 	delete[] _elem;
 	/* delete без [] - освобождает память выделенную с помощью оператора new для отдельного объекта */
-	double * p = new double(8.8);
-	delete p;
+	//double * p = new double(8.8);
+	//delete p;
 }
 
 
-
-double SVector::get(int n) const
+template<typename T>
+double SVector<T>::get(int n) const
 {
 	return _elem[n];
 }
 
 
-
-void SVector::set(int n, double v)
+template<typename T>
+void SVector<T>::set(int n, T v)
 {
 	_elem[n] = v;
 }
 
-bool SVector::reserve(int newAlloc)
+template<typename T>
+bool SVector<T>::reserve(int newAlloc)
 {
 	// размер никогда не уменьшается
 	if (newAlloc <= _space)
@@ -190,7 +197,7 @@ bool SVector::reserve(int newAlloc)
 		return false;
 	}
 	// выделение новой памяти
-	double * p = new double[newAlloc];
+	double * p = new T[newAlloc];
 	for (int i = 0; i < _sz; ++i)
 	{
 		// копируем старые элементы
@@ -208,8 +215,8 @@ bool SVector::reserve(int newAlloc)
 }
 
 
-
-void SVector::resize(int newSize)
+template<typename T>
+void SVector<T>::resize(int newSize)
 // Создаем вектор, содержащий newSize элементов
 // Инициализируем каждый элемент зна чением по умолчанию 0.0
 {
@@ -224,8 +231,8 @@ void SVector::resize(int newSize)
 }
 
 
-
-void SVector::pushBack(double d)
+template<typename T>
+void SVector<T>::pushBack(T& d)
 // Увеличивает ра змер вектора на единицу;
 // инициализирует новый элемент зна чением d
 {
@@ -250,8 +257,8 @@ void SVector::pushBack(double d)
 }
 
 
-
-void SVector::print() const
+template<typename T>
+void SVector<T>::print() const
 {
 	for (int i = 0; i < size(); ++i)
 	{
